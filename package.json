@@ -1,7 +1,7 @@
 {
   "name": "LanguageIdentifierNodejsStarterApp",
   "version": "0.0.1",
-  "description": "A sample nodejs app for Bluemix that use the Language Identification service",
+  "description": "This is a first try of creating a Twitter-client to inserto into a cloudantDB",
   "dependencies": {
     "express": "3.4.7",
     "jade": "1.1.4",
