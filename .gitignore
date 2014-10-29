@@ -1,2 +1,4 @@
 node_modules/
-output.log
+*.log
+twitter-cred.json
+credentials.json

@@ -9,7 +9,8 @@ var express = require('express');
 var url = require('url');
 var querystring = require('querystring');
 var log4js = require('log4js');
-
+var util = require('util');
+var twitter = require('twitter');
 
 log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('output.log',null,10000000000));
@@ -52,6 +53,20 @@ var twitterInfo = JSON.parse(process.env.TWITTER_INFO || "{}");
 var service_url = '<service_url>';
 var service_username = '<service_username>';
 var service_password = '<service_password>';
+
+var configTwitter = require('./twitter-cred.json');
+var twit = new twitter(configTwitter);
+
+twit.stream('user', {track:'pcolazurdo'}, function(stream) {
+    //stream.on('data', function(data) {
+    //    console.log(util.inspect(data));
+    //});
+    stream.on('favorite', function(data) {
+        console.log(data.target_object.text);        
+    });
+    // Disconnect stream after five seconds
+    //setTimeout(stream.destroy, 5000);
+});
 
 
 // VCAP_SERVICES contains all the credentials of services bound to
