@@ -11,15 +11,31 @@ var querystring = require('querystring');
 var log4js = require('log4js');
 var util = require('util');
 var twitter = require('twitter');
+var pouchdb = require('pouchdb');
+var http = require('http');
+
+
+
+
 
 log4js.loadAppender('file');
 log4js.addAppender(log4js.appenders.file('output.log',null,10000000000));
 
 // the important part ;)
 log4js.replaceConsole()
+var logger = log4js.getLogger();
 //
 
-var logger = log4js.getLogger();
+if (process.env.VCAP_SERVICES) {
+    // Running on Bluemix. Parse the process.env for the port and host that we've been assigned.
+    var env = JSON.parse(process.env.VCAP_SERVICES);
+    var host = process.env.VCAP_APP_HOST;
+    var port = process.env.VCAP_APP_PORT;
+    console.log('VCAP_SERVICES: %s', process.env.VCAP_SERVICES);
+    // Also parse out Cloudant settings.
+    var cloudant = env['cloudantNoSQLDB'][0]['credentials'];
+}
+
 
 //Capture all Unhandled Errors - seems not recommended in production but for time being it is useful
 /*
@@ -29,6 +45,39 @@ process.on('uncaughtException', function(err) {
     console.log(err);},3000);
   });
 */
+
+var db = new pouchdb('tweets'),
+	 remote =cloudant.url + '/tweets';
+	opts = {
+	  continuous: true
+	  };
+     // Replicate the DB to remote
+	console.log(remote);
+	db.replicate.to(remote, opts);
+	db.replicate.from(remote, opts);
+
+	// Put 3 documents into the DB
+
+	 db.put({
+		  author: 'Authur C Clarke',
+		  Title : '2001: A Space Odyssey'
+		}, 'book2', function (err, response) {
+		  console.log(err || response);
+		});
+	 db.put({
+		  author: 'Dan Brown',
+		  Title : 'Digital Fortress'
+		}, 'book3', function (err, response) {
+		  console.log(err || response);
+		});
+	 res.writeHead(200, {'Content-Type': 'text/plain'});
+	 res.write("3 documents is inserted");
+	 res.end();
+}; // End insert_records
+
+
+
+
 
 
 console.log("App Started: " + Date().toString());
@@ -62,7 +111,11 @@ twit.stream('user', {track:'pcolazurdo'}, function(stream) {
     //    console.log(util.inspect(data));
     //});
     stream.on('favorite', function(data) {
-        console.log(data.target_object.text);        
+        console.log(data.target_object.text);
+        db.put(data, data.target_object.id_str, function (err, response) {
+            console.log(err || response);
+          });
+
     });
     // Disconnect stream after five seconds
     //setTimeout(stream.destroy, 5000);
