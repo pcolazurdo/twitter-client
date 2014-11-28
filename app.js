@@ -46,8 +46,7 @@ process.on('uncaughtException', function(err) {
   });
 */
 
-var db = new pouchdb('tweets'),
-	 remote =cloudant.url + '/tweets';
+var db = new pouchdb(cloudant.url + '/tweets');
 	opts = {
 	  continuous: true
 	  };
@@ -73,7 +72,7 @@ var db = new pouchdb('tweets'),
 	 res.writeHead(200, {'Content-Type': 'text/plain'});
 	 res.write("3 documents is inserted");
 	 res.end();
-}; // End insert_records
+// };   // End insert_records
 
 
 
